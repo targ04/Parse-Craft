@@ -157,11 +157,70 @@ static void inorderNary(const Grammar *G, const ParseTreeNode *n, FILE *out) {
         c = c->nextSibling;
     }
 }
+static void printTreePretty(
+    const Grammar *G,
+    const ParseTreeNode *node,
+    FILE *out,
+    int depth,
+    bool isLastChild
+) {
+    if (!node) return;
+
+    // Indentation
+    for (int i = 0; i < depth; i++) {
+        fprintf(out, "│   ");
+    }
+
+    if (depth > 0) {
+        fprintf(out, isLastChild ? "└── " : "├── ");
+    }
+
+    const char *name = G->symbols[node->symbolId].name;
+
+    if (node->firstChild == NULL) {
+        // Leaf
+        if (node->hasToken) {
+            fprintf(out, "%s  (lexeme: %s, line: %d)\n",
+                    name,
+                    node->tk.lexeme,
+                    node->tk.lineNo);
+        } else {
+            fprintf(out, "%s\n", name);
+        }
+    } else {
+        fprintf(out, "%s\n", name);
+    }
+
+    // Count children
+    const ParseTreeNode *child = node->firstChild;
+    int count = 0;
+    while (child) {
+        count++;
+        child = child->nextSibling;
+    }
+
+    // Recurse on children
+    child = node->firstChild;
+    int idx = 0;
+    while (child) {
+        printTreePretty(G, child, out, depth + 1, (idx == count - 1));
+        child = child->nextSibling;
+        idx++;
+    }
+}
 
 void printParseTree(const Grammar *G, const ParseTreeNode *root, FILE *out) {
-    if (!out) return;
-    printPTHeader(out);
-    inorderNary(G, root, out);
+
+    if (!root) return;
+
+    fprintf(out, "\n------------------------ PARSE TREE (STRUCTURE) ------------------------\n\n");
+
+    printTreePretty(G, root, out, 0, true);
+
+    fprintf(out, "\n\n------------------------ PARSE TREE (TABLE FORMAT) ------------------------\n\n");
+
+    printPTHeader(out);        
+    inorderNary(G, root, out); 
 }
 
 /*  FIRST(seq) helper  */
