@@ -27,14 +27,6 @@ $(TARGET): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Convenience: run with required args (edit TEST/PARSE if you want)
-TEST  ?= t3.txt
-TREE  ?= parsetreeOutFile.txt
-GRAM  ?= grammar.txt
-
-run: $(TARGET)
-	./$(TARGET) $(TEST) $(GRAM) $(TREE)
-
 clean:
 	rm -f $(OBJS) $(TARGET)
 

@@ -242,23 +242,20 @@ static void optionTimingLexerParser(
 static void usage(const char *prog) {
     fprintf(stderr,
         "Usage:\n"
-        "  %s <source_file> [grammar_file] [parse_tree_output_file]\n\n"
-        "Defaults:\n"
-        "  grammar_file = grammar.txt\n"
-        "  parse_tree_output_file = parsetree.txt\n",
+        "  %s <source_file> [parse_tree_output_file]\n\n",
         prog
     );
 }
 
 int main(int argc, char **argv) {
-    if (argc < 2) {
+    if (argc < 3) {
         usage(argv[0]);
         return 1;
     }
 
     const char *sourceFile = argv[1];
-    const char *grammarFile = "grammar.txt";                 // fixed as per spec
-    const char *parseTreeOut = (argc >= 3) ? argv[2] : "parsetree.txt";
+    const char *grammarFile = "grammar.txt";
+    const char *parseTreeOut = argv[2];
 
     printImplementationStatus();
 
@@ -308,6 +305,5 @@ int main(int argc, char **argv) {
                 break;
         }
     }
-
     return 0;
 }
