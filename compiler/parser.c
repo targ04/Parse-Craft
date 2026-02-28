@@ -581,14 +581,18 @@ ParseTreeNode* parseInputSourceCode(
         } else {
             // Error recovery:
             // If lookahead in FOLLOW(X) => pop X (sync), else discard token.
+            // IMPORTANT: Never discard EOF (it won't advance). Pop instead.
             ok = false;
-            if (setContains(&FOLLOW[X], lookSym)) {
-                reportSyntaxError(out, look.lineNo, "Sync: popping nonterminal",
-                                  tokenToString(look.type), G->symbols[X].name);
+            const int isEOF = (look.type == TK_EOF);
+
+            if (isEOF ||setContains(&FOLLOW[X], lookSym)) {
+                reportSyntaxError(out, look.lineNo,
+                            isEOF ? "Unexpected EOF: popping nonterminal" : "Sync: popping nonterminal",
+                            tokenToString(look.type), G->symbols[X].name);
                 sPop(&st);
             } else {
                 reportSyntaxError(out, look.lineNo, "Discarding token",
-                                  tokenToString(look.type), G->symbols[X].name);
+                            tokenToString(look.type), G->symbols[X].name);
                 look = getNextToken(B);
                 lookSym = terminalSymbolIdFromToken(G, look);
             }
