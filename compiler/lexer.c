@@ -1,3 +1,17 @@
+/*
+
+GROUP 12:
+2022B3A71033P       ARJUN NEEKHRA
+2022B4A70596P       ARPITA TOMAR
+2022B3A70581P       ARVIND ANNAMALAI BALASUBRAMANIAN
+2022B3A70604P       MEHUL SRIVASTAVA
+2022B2A71101P       S PRANAV KUMAR
+2022B3A70453P       TARUN G
+
+*/
+
+
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -330,10 +344,12 @@ tokenInfo getNextToken(twinBuffer *B) {
         if (c == '%') {
             // ignore comment
             while ((c = nextChar(B)) != EOF && c != '\n') {}
-            continue; // then resume skipping
+            if (c=='\n')return makeTok(TK_COMMENT, B->lineNo-1, "COMMENT");
+            else return makeTok(TK_COMMENT, B->lineNo, "COMMENT");
         }
         break;
     }
+
 
     // We are at first non-space non-comment character
     markLexemeBegin(B);
@@ -417,12 +433,21 @@ tokenInfo getNextToken(twinBuffer *B) {
     // &&& or errors like &&
     if (c == '&') {
         int c2 = nextChar(B);
-        int c3 = nextChar(B);
-        if (c2 == '&' && c3 == '&') {
-            return makeTok(TK_AND, startLine, "&&&");
+        if(c2=='&'){
+            int c3 = nextChar(B);
+            if (c3 == '&') {
+                return makeTok(TK_AND, startLine, "&&&");
+            }
+            // It is "&&" 
+            if (c3 != EOF) retractChar(B, 1);
+            tk = makeTok(TK_ERROR, startLine, "&");
+            tk.errCode = LEXERR_BAD_AND;
+            reportLexError(B, tk.errCode, "&&& expected");
+            return tk;
         }
-        // If it's "&&" or "&" -> lexical error (spec gives && as error example)
-        if (c3 != EOF) retractChar(B, 1);
+        
+        // If it's "&" -> lexical error (spec gives && as error example)
+        
         if (c2 != EOF) retractChar(B, 1);
         tk = makeTok(TK_ERROR, startLine, "&");
         tk.errCode = LEXERR_BAD_AND;
@@ -433,11 +458,18 @@ tokenInfo getNextToken(twinBuffer *B) {
     // @@@ or errors like @@
     if (c == '@') {
         int c2 = nextChar(B);
-        int c3 = nextChar(B);
-        if (c2 == '@' && c3 == '@') {
-            return makeTok(TK_OR, startLine, "@@@");
+        if(c2=='@'){
+            int c3 = nextChar(B);
+            if (c3 == '@') {
+                return makeTok(TK_OR, startLine, "@@");
+            }
+            // It is "@@" 
+            if (c3 != EOF) retractChar(B, 1);
+            tk = makeTok(TK_ERROR, startLine, "@");
+            tk.errCode = LEXERR_BAD_OR;
+            reportLexError(B, tk.errCode, "@@@ expected");
+            return tk;
         }
-        if (c3 != EOF) retractChar(B, 1);
         if (c2 != EOF) retractChar(B, 1);
         tk = makeTok(TK_ERROR, startLine, "@");
         tk.errCode = LEXERR_BAD_OR;
