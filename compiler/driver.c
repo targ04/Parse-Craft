@@ -184,7 +184,7 @@ static void optionParseAndPrintTree(
     initLexer(&B, fp, cfg);
 
     bool ok = true;
-    ParseTreeNode *root = parseInputSourceCode(&B, &P.G, &P.T, P.FOLLOW, stdout, &ok);
+    ParseTreeNode *root = parseInputSourceCode(&B, &P.G, &P.T, P.FIRST, P.FOLLOW, stdout, &ok);
 
     printf("\nParse status: %s\n", ok ? "SUCCESS (or recovered)" : "COMPLETED WITH SYNTAX ERRORS");
 
@@ -240,7 +240,7 @@ static void optionTimingLexerParser(
     initLexer(&B, fp, cfg);
 
     bool ok = true;
-    ParseTreeNode *root = parseInputSourceCode(&B, &P.G, &P.T, P.FOLLOW, stdout, &ok);
+    ParseTreeNode *root = parseInputSourceCode(&B, &P.G, &P.T, P.FIRST, P.FOLLOW, stdout, &ok);
 
     // We don't need the tree for timing; free it
     freeParseTree(root);

@@ -44,6 +44,7 @@ ParseTreeNode* parseInputSourceCode(
     twinBuffer *B,
     const Grammar *G,
     const ParseTable *T,
+    const BitSet *FIRST,
     const BitSet *FOLLOW,
     FILE *out,
     bool *okOut
