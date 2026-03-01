@@ -207,10 +207,23 @@ bool isKeyword(const char *lexeme) {
 }
 
 // ERROR reporting
+static const char* lexErrCodeToString(LexErrorCode code) {
+    switch (code) {
+        case LEXERR_NONE:              return "LEXERR_NONE";
+        case LEXERR_UNKNOWN_SYMBOL:    return "LEXERR_UNKNOWN_SYMBOL";
+        case LEXERR_ASSIGN_INCOMPLETE: return "LEXERR_ASSIGN_INCOMPLETE";
+        case LEXERR_BAD_RNUM:          return "LEXERR_BAD_RNUM";
+        case LEXERR_BAD_NEQ:           return "LEXERR_BAD_NEQ";
+        case LEXERR_BAD_AND:           return "LEXERR_BAD_AND";
+        case LEXERR_BAD_OR:            return "LEXERR_BAD_OR";
+        case LEXERR_TOO_LONG_LEXEME:   return "LEXERR_TOO_LONG_LEXEME";
+        default:                       return "LEXERR_UNKNOWN";
+    }
+}
 void reportLexError(const twinBuffer *B, LexErrorCode code, const char *lexemeHint) {
     if (!g_cfg.printErrors) return;
-    fprintf(stderr, "[LEXERR] line %d code %d near '%s'\n",
-            B->lineNo, (int)code, (lexemeHint ? lexemeHint : ""));
+    fprintf(stderr, "[LEXERR] line %d errCode %s lexeme '%s'\n",
+            B->lineNo, lexErrCodeToString(code), (lexemeHint ? lexemeHint : ""));
 }
 
 const char* tokenToString(TokenType t) {
