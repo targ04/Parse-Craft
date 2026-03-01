@@ -451,20 +451,19 @@ tokenInfo getNextToken(twinBuffer *B) {
             if (c3 == '&') {
                 return makeTok(TK_AND, startLine, "&&&");
             }
-            // It is "&&" 
+            // It is "&&" followed by a non-'&' character
             if (c3 != EOF) retractChar(B, 1);
-            tk = makeTok(TK_ERROR, startLine, "&");
+            tk = makeTok(TK_ERROR, startLine, "&&");
             tk.errCode = LEXERR_BAD_AND;
-            reportLexError(B, tk.errCode, "&&& expected");
+            reportLexError(B, tk.errCode, "&&");
             return tk;
         }
-        
-        // If it's "&" -> lexical error (spec gives && as error example)
-        
+
+        // Single '&' -> lexical error
         if (c2 != EOF) retractChar(B, 1);
         tk = makeTok(TK_ERROR, startLine, "&");
         tk.errCode = LEXERR_BAD_AND;
-        reportLexError(B, tk.errCode, "&&& expected");
+        reportLexError(B, tk.errCode, "&");
         return tk;
     }
 
@@ -474,19 +473,20 @@ tokenInfo getNextToken(twinBuffer *B) {
         if(c2=='@'){
             int c3 = nextChar(B);
             if (c3 == '@') {
-                return makeTok(TK_OR, startLine, "@@");
+                return makeTok(TK_OR, startLine, "@@@");  /* fixed: was "@@" */
             }
-            // It is "@@" 
+            // It is "@@" followed by a non-'@' character
             if (c3 != EOF) retractChar(B, 1);
-            tk = makeTok(TK_ERROR, startLine, "@");
+            tk = makeTok(TK_ERROR, startLine, "@@");
             tk.errCode = LEXERR_BAD_OR;
-            reportLexError(B, tk.errCode, "@@@ expected");
+            reportLexError(B, tk.errCode, "@@");
             return tk;
         }
+        // Single '@' -> lexical error
         if (c2 != EOF) retractChar(B, 1);
         tk = makeTok(TK_ERROR, startLine, "@");
         tk.errCode = LEXERR_BAD_OR;
-        reportLexError(B, tk.errCode, "@@@ expected");
+        reportLexError(B, tk.errCode, "@");
         return tk;
     }
 

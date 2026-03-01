@@ -28,16 +28,34 @@ GROUP 12:
 #include "firstfollow.h"
 #include "parser.h"
 
-// Pretty printing helpers 
-static void printTokenHeader(void) {
-    printf("%-8s %-18s %-22s %-10s\n", "LINE", "TOKEN", "LEXEME", "ERR");
-    printf("----------------------------------------------------------------\n");
-}
-
-static void printTokenRow(const tokenInfo *tk) {
-    const char *tname = tokenToString(tk->type);
-    const char *err = (tk->type == TK_ERROR) ? "YES" : "";
-    printf("%-8d %-18s %-22s %-10s\n", tk->lineNo, tname, tk->lexeme, err);
+/* Print a single lex error in the canonical format used by Option 2 */
+static void printLexErrorLine(const tokenInfo *tk) {
+    switch ((LexErrorCode)tk->errCode) {
+        case LEXERR_TOO_LONG_LEXEME:
+            printf("Line No. %-4d Error: Variable Identifier is longer than the prescribed length of 20 characters.\n", tk->lineNo);
+            break;
+        case LEXERR_UNKNOWN_SYMBOL:
+            printf("Line No. %-4d Error: Unknown Symbol <%s>\n", tk->lineNo, tk->lexeme);
+            break;
+        case LEXERR_BAD_AND:
+            printf("Line No. %-4d Error: Unknown pattern <%s>\n", tk->lineNo, tk->lexeme);
+            break;
+        case LEXERR_BAD_OR:
+            printf("Line No. %-4d Error: Unknown pattern <%s>\n", tk->lineNo, tk->lexeme);
+            break;
+        case LEXERR_ASSIGN_INCOMPLETE:
+            printf("Line No. %-4d Error: Unknown pattern <%s>\n", tk->lineNo, tk->lexeme);
+            break;
+        case LEXERR_BAD_RNUM:
+            printf("Line No. %-4d Error: Unknown pattern <%s>\n", tk->lineNo, tk->lexeme);
+            break;
+        case LEXERR_BAD_NEQ:
+            printf("Line No. %-4d Error: Unknown pattern <%s>\n", tk->lineNo, tk->lexeme);
+            break;
+        default:
+            printf("Line No. %-4d Error: Unknown pattern <%s>\n", tk->lineNo, tk->lexeme);
+            break;
+    }
 }
 
 // Banner / status 
@@ -133,7 +151,10 @@ static void optionRemoveCommentsPrint(const char *sourceFile) {
     remove(tmpClean);
 }
 
-// Option 2: print token list 
+// Option 2: print token list
+// Format per spec: each token on a new line with lexeme and line number.
+// Comments ARE included (TK_COMMENT) as the sample output shows them.
+// Errors are printed in a readable format (not as table rows).
 static void optionPrintTokenList(const char *sourceFile) {
     FILE *fp = fopen(sourceFile, "r");
     if (!fp) {
@@ -141,17 +162,26 @@ static void optionPrintTokenList(const char *sourceFile) {
         return;
     }
 
-    lexerConfig cfg = {.returnComments = false, .printErrors = true};
+    // returnComments = true: TK_COMMENT appears in the stream (sample output shows them)
+    // printErrors   = false: we handle error output ourselves to avoid two formats
+    lexerConfig cfg = {.returnComments = true, .printErrors = false};
     twinBuffer B;
     initLexer(&B, fp, cfg);
 
-    printTokenHeader();
+    printf("%-10s  %-26s  %s\n", "Line No.", "Lexeme", "Token");
+    printf("--------------------------------------------------------------------\n");
 
     while (1) {
         tokenInfo tk = getNextToken(&B);
 
-        // Print every token including TK_ERROR and TK_EOF
-        printTokenRow(&tk);
+        if (tk.type == TK_ERROR) {
+            printLexErrorLine(&tk);
+        } else {
+            printf("%-10d  %-26s  %s\n",
+                   tk.lineNo,
+                   (tk.type == TK_EOF) ? "EOF" : tk.lexeme,
+                   tokenToString(tk.type));
+        }
 
         if (tk.type == TK_EOF) break;
     }
@@ -186,24 +216,31 @@ static void optionParseAndPrintTree(
     bool ok = true;
     ParseTreeNode *root = parseInputSourceCode(&B, &P.G, &P.T, P.FIRST, P.FOLLOW, stdout, &ok);
 
-    printf("\nParse status: %s\n", ok ? "SUCCESS (or recovered)" : "COMPLETED WITH SYNTAX ERRORS");
+    // Spec mandates this exact message on successful parse
+    if (ok) {
+        printf("\nInput source code is syntactically correct...........\n");
+    } else {
+        printf("\nParsing completed. Syntax errors reported above.\n");
+    }
 
+    // Always write the (possibly partial) parse tree — spec says parser recovers and
+    // continues building the tree even when there are syntax errors.
     FILE *out = fopen(parseTreeOutFile, "w");
-    if (!ok) {
-        fprintf(stderr, "ERROR: Could not make parse tree for Syntactically incorrect code\n");
-    }
-    else if(!out){
+    if (!out) {
         fprintf(stderr, "ERROR: Could not open parse tree output file: %s\n", parseTreeOutFile);
-        // still print to console as fallback
-        printParseTree(&P.G, root, stdout);
-        freeParseTree(root);
-    }
-    else {
-        printParseTree(&P.G, root, out);
+        if (root) {
+            // fallback: print to console
+            printParseTree(&P.G, root, stdout);
+        }
+    } else {
+        if (root) {
+            printParseTree(&P.G, root, out);
+            printf("Parse tree written to: %s\n", parseTreeOutFile);
+        }
         fclose(out);
-        printf("Parse tree written to: %s\n", parseTreeOutFile);
-        freeParseTree(root);
     }
+    freeParseTree(root);
+    root = NULL;
 
     
 
