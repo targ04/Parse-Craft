@@ -1,3 +1,16 @@
+/*
+
+GROUP 12:
+2022B3A71033P       ARJUN NEEKHRA
+2022B4A70596P       ARPITA TOMAR
+2022B3A70581P       ARVIND ANNAMALAI BALASUBRAMANIAN
+2022B3A70604P       MEHUL SRIVASTAVA
+2022B2A71101P       S PRANAV KUMAR
+2022B3A70453P       TARUN G
+
+*/
+
+
 // driver.c
 // Single-folder driver as per project menu specification (0-4)
 
@@ -89,10 +102,12 @@ static bool buildParserPrereqs(ParserPrereqs *P, const char *grammarFile, FILE *
     computeFIRST(&P->G, P->FIRST);
     computeFOLLOW(&P->G, P->FIRST, P->FOLLOW);
 
+    //printFIRST(&P->G, P->FIRST, stdout);
+    //printFOLLOW(&P->G, P->FOLLOW, stdout);
     initParseTable(&P->G, &P->T);
     ParseTableStats st = createParseTable(&P->G, P->FIRST, P->FOLLOW, &P->T, conflictOut);
     fprintf(stdout, "ParseTable: filled=%d conflicts=%d\n", st.numFilled, st.numConflicts);
-
+    //printParseTable(&P->G, &P->T, stdout);
     P->inited = true;
     return true;
 }
@@ -174,17 +189,23 @@ static void optionParseAndPrintTree(
     printf("\nParse status: %s\n", ok ? "SUCCESS (or recovered)" : "COMPLETED WITH SYNTAX ERRORS");
 
     FILE *out = fopen(parseTreeOutFile, "w");
-    if (!out) {
+    if (!ok) {
+        fprintf(stderr, "ERROR: Could not make parse tree for Syntactically incorrect code\n");
+    }
+    else if(!out){
         fprintf(stderr, "ERROR: Could not open parse tree output file: %s\n", parseTreeOutFile);
         // still print to console as fallback
         printParseTree(&P.G, root, stdout);
-    } else {
+        freeParseTree(root);
+    }
+    else {
         printParseTree(&P.G, root, out);
         fclose(out);
         printf("Parse tree written to: %s\n", parseTreeOutFile);
+        freeParseTree(root);
     }
 
-    freeParseTree(root);
+    
 
     closeLexer(&B);
     fclose(fp);
