@@ -16,7 +16,7 @@ GROUP 12:
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include "lexer.h"
+#include "lexerDef.h"
 
 // Keyword table
 static const keywordEntry KW[] = {
