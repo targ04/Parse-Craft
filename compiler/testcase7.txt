@@ -1,5 +1,0 @@
-_main 
-	type int : b5;
-	b5 <--- 1;
-    return;
-end
