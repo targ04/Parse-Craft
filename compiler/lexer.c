@@ -355,10 +355,15 @@ tokenInfo getNextToken(twinBuffer *B) {
         if (c == ' ' || c == '\t' || c == '\r' || c == '\n') continue;
 
         if (c == '%') {
-            // ignore comment
+            // consume rest of comment line
+            int commentLine = B->lineNo;  // line # of the '%'
             while ((c = nextChar(B)) != EOF && c != '\n') {}
-            if (c=='\n')return makeTok(TK_COMMENT, B->lineNo-1, "COMMENT");
-            else return makeTok(TK_COMMENT, B->lineNo, "COMMENT");
+            // when returnComments is true, emit TK_COMMENT so Option 2 can print it
+            if (g_cfg.returnComments) {
+                return makeTok(TK_COMMENT, commentLine, "%");
+            }
+            // otherwise silently skip and continue scanning
+            continue;
         }
         break;
     }

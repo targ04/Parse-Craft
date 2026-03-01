@@ -209,7 +209,8 @@ static void optionParseAndPrintTree(
         return;
     }
 
-    lexerConfig cfg = {.returnComments = false, .printErrors = true};
+    // printErrors=false: parser handles all error reporting to stdout (no duplicate stderr)
+    lexerConfig cfg = {.returnComments = false, .printErrors = false};
     twinBuffer B;
     initLexer(&B, fp, cfg);
 
@@ -272,7 +273,8 @@ static void optionTimingLexerParser(
         return;
     }
 
-    lexerConfig cfg = {.returnComments = false, .printErrors = true};
+    // printErrors=false: parser wrapper handles error reporting; timing option just needs counts
+    lexerConfig cfg = {.returnComments = false, .printErrors = false};
     twinBuffer B;
     initLexer(&B, fp, cfg);
 
