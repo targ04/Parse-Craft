@@ -219,7 +219,7 @@ static void optionParseAndPrintTree(
 
     // Spec mandates this exact message on successful parse
     if (ok) {
-        printf("\nInput source code is syntactically correct...........\n");
+        printf("\nInput source code is syntactically correct.\n");
     } else {
         printf("\nParsing completed. Syntax errors reported above.\n");
     }
@@ -236,7 +236,7 @@ static void optionParseAndPrintTree(
     } else {
         if (root) {
             printParseTree(&P.G, root, out);
-            printf("Parse tree written to: %s\n", parseTreeOutFile);
+            printf(ok?"Parse tree written to: %s\n": "Partial parse tree for syntactically incorrect code written to: %s\n", parseTreeOutFile);
         }
         fclose(out);
     }
