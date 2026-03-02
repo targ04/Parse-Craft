@@ -196,7 +196,15 @@ static void printOneNodeLine(const Grammar *G, const ParseTreeNode *n, FILE *out
     }
 
     // Spec wants lineno column always present; for non-leaf or unknown line print -1 (or 0).
-    fprintf(out, "%-20s %-8d %-18s %-15s %-22s %-8s %-22s\n",
+    if(isLeaf)fprintf(out, "%-20s %-8d %-18s %-15s %-22s %-8s %-22s\n",
+            lexeme,
+            lineno,
+            tokenName,
+            valbuf,
+            parentSym,
+            isLeaf ? "yes" : "no",
+            "----");
+    else fprintf(out, "%-20s %-8d %-18s %-15s %-22s %-8s %-22s\n",
             lexeme,
             lineno,
             tokenName,
